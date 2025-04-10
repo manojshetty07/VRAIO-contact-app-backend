@@ -1,26 +1,17 @@
-import mysql from "mysql2/promise";
+import { Sequelize } from "sequelize";
 
-// Database connection configuration
-const databaseConfig = {
-  host: "localhost",
-  user: "root", // Modify as necessary
-  password: "", // Modify as necessary
-  database: process.env.DB_NAME, // Set the DB name in .env file
-  connectTimeout: 60000,
-};
-
-const dbPool = mysql.createPool({
-  ...databaseConfig,
-  connectionLimit: 10,
+const sequelize = new Sequelize(process.env.DB_URI, {
+  pool: {
+    max: 10,
+    acquire: 60000,
+  },
 });
 
-// Test database connection
-function testDatabaseConnection() {
+function checkConnection() {
   return new Promise((resolve, reject) => {
-    dbPool
-      .getConnection()
-      .then((connection) => {
-        connection.release();
+    sequelize
+      .authenticate()
+      .then((_) => {
         resolve();
       })
       .catch((error) => {
@@ -28,5 +19,4 @@ function testDatabaseConnection() {
       });
   });
 }
-
-export { dbPool, testDatabaseConnection };
+export { sequelize, checkConnection };

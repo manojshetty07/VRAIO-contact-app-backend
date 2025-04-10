@@ -1,14 +1,17 @@
 import { app } from "./app.js";
-import { testDatabaseConnection } from "./db/databaseConnection.js";
+import { checkConnection, sequelize,  } from "./db/databaseConnection.js";
+import { Contacts , PhoneNumber , Email } from "./models/index.js";
 
 const port = process.env.PORT || 8080;
-testDatabaseConnection()
+checkConnection()
   .then(() => {
-    app.listen(port, () => {
-      console.log(`Server is listening at http://localhost:${port}/`);
+    sequelize.sync({ alter: true }).then(() => {
+      app.listen(port, () => {
+        console.log(`server is running on http://localhost:${port}/`);
+      });
     });
   })
   .catch((_) => {
-    console.error("Failed to connect to the database");
+    console.log("Connection Lost...!");
     process.exit(1);
   });
