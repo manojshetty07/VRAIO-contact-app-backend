@@ -1,6 +1,6 @@
 import { app } from "./app.js";
 import { checkConnection, sequelize,  } from "./db/databaseConnection.js";
-import { Contacts , PhoneNumber , Email } from "./models/index.js";
+import { Contacts } from "./models/index.js";
 
 const port = process.env.PORT || 8080;
 checkConnection()

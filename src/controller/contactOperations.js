@@ -2,25 +2,14 @@
 
 
 import { sequelize } from "../db/databaseConnection.js";
-import { Contacts, Email, PhoneNumber } from "../models/index.js";
+import { Contacts } from "../models/index.js";
 import { CustomError } from "../utils/errorHandler.js";
 import { SuccessResponse } from "../utils/responseHandler.js";
 
 // Fetch all contacts
 const fetchAllContacts = async (_, res) => {
   try {
-    
-    const contacts =  await Contacts.findAll({
-      include: [
-        {
-          model: PhoneNumber,
-          attributes: ["phoneNumber"],
-        },
-        {
-          model: Email,
-          attributes: ["email"],
-        },
-      ],
+    const contacts = await Contacts.findAll({
       attributes: {
         include: [
           [
@@ -31,7 +20,6 @@ const fetchAllContacts = async (_, res) => {
         exclude: ["dob"],
       },
     });
-    
 
     const formattedContacts = contacts.map((con) => ({
       contactId: con.contactId,
@@ -39,8 +27,8 @@ const fetchAllContacts = async (_, res) => {
       lastName: con.lastName,
       nickName: con.nickName,
       dob: con.dob,
-      phoneNumbers: con.PhoneNumbers.map((p) => p.phoneNumber),
-      emails: con.Emails.map((e) => e.email),
+      phoneNumbers: con.phoneNumbers ? JSON.parse(con.phoneNumbers) : [],
+      emails: con.emails ? JSON.parse(con.emails) : [],
     }));
     return res
       .status(200)
@@ -67,23 +55,11 @@ const addNewContact = async (req, res) => {
       lastName: contactData.lastName,
       nickName: contactData.nickName,
       dob: contactData.dob,
+      phoneNumbers: contactData.phoneNumbers,
+      emails: contactData.emails,
     });
 
-    contactData.phoneNumbers.map(
-      async (ph) =>
-        await PhoneNumber.create({
-          contactId: con.contactId,
-          phoneNumber: ph,
-        })
-    );
-
-    contactData.emails.map(
-      async (em) =>
-        await Email.create({
-          contactId: con.contactId,
-          email: em,
-        })
-    );
+    
 
     return res
       .status(200)
@@ -112,35 +88,10 @@ const modifyExistingContact = async (req, res) => {
       lastName: contactData.lastName,
       nickName: contactData.nickName,
       dob: contactData.dob,
+      phoneNumbers: contactData.phoneNumbers,
+      emails: contactData.emails,
     });
 
-    await PhoneNumber.destroy({
-      where: {
-        contactId: contactData.contactId,
-      },
-    });
-
-    await Email.destroy({
-      where: {
-        contactId: contactData.contactId,
-      },
-    });
-
-    contactData.phoneNumbers.map(
-      async (ph) =>
-        await PhoneNumber.create({
-          contactId: contactData.contactId,
-          phoneNumber: ph,
-        })
-    );
-
-    contactData.emails.map(
-      async (em) =>
-        await Email.create({
-          contactId: contactData.contactId,
-          email: em,
-        })
-    );
 
     return res
       .status(200)
